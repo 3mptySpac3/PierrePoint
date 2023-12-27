@@ -1,18 +1,33 @@
 import React from 'react';
 import GoogleLogin from "react-google-login";
 import {useNavigate} from "react-router-dom";
-import {FCGoogle} from "react-icons/fc";
 import ppointVideo from "../assets/ppoint.mp4";
 import logo from "../assets/PPPoint.png";
 import { FcGoogle } from 'react-icons/fc';
+import {client} from '../client'
 
 
 
 
 const Login = () => {
-  const responseGoogle=(response) => {
-    console.log(response);
+  const navigate = useNavigate();
 
+  const responseGoogle=(response) => {
+    localStorage.setItem("user", JSON.stringify(response.profileObj));
+
+    const {name, googleId, imageUrl} = response.profileObj;
+
+    const doc = {
+      _id: googleId,
+      _type: "user",
+      userName: name,
+      image: imageUrl,
+    }
+
+    client.createIfNotExists(doc)
+    .then(() => {
+      navigate("/", {replace: true})
+    })
   }
   return (
     <div className='flex justify-start items-center flex-col h-screen'>
