@@ -7,8 +7,10 @@ import "./index.css";
 
 
 ReactDOM.render(
-  <Router>
-    <App />
-  </Router>, 
-  document.getElementById("root")
+  <React.StrictMode>
+    <Router>
+      <App />
+    </Router>
+  </React.StrictMode>,
+  document.getElementById('root')
 );

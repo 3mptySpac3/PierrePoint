@@ -12,7 +12,14 @@ import {client} from '../client'
 const Login = () => {
   const navigate = useNavigate();
 
+  const handleLoginFailure = (response) => {
+    console.error('Failed to log in:', response);
+    // Show an error message to the user
+  }
+
+
   const responseGoogle = (response) => {
+    console.log("Google response:", response);
     if (!response.profileObj) {
       console.error('Google login response is missing profileObj:', response);
       // Handle the error here. For example, you might want to show an error message to the user.
@@ -23,6 +30,7 @@ const Login = () => {
     localStorage.setItem("user", JSON.stringify(response.profileObj));
   
     const { name, googleId, imageUrl } = response.profileObj;
+    
   
     const doc = {
       _id: googleId,
@@ -32,9 +40,12 @@ const Login = () => {
     }
   
     client.createIfNotExists(doc)
-      .then(() => {
-        navigate("/", { replace: true });
-      });
+    .then(() => {
+      navigate("/", { replace: true });
+    })
+    .catch((error) => {
+      console.error("Error creating user in Sanity:", error);
+    });
   }
   
   return (
@@ -70,7 +81,7 @@ const Login = () => {
               </button>
               )}
               onSuccess={responseGoogle}
-              onFailure={responseGoogle}
+              onFailure={handleLoginFailure}
               cookiePolicy="single_host_origin"
 
 
