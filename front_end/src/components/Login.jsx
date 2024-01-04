@@ -1,4 +1,4 @@
-import React from 'react';
+import {React, useEffect} from 'react';
 import GoogleLogin from "react-google-login";
 import {useNavigate} from "react-router-dom";
 import ppointVideo from "../assets/ppoint.mp4";
@@ -16,6 +16,27 @@ const Login = () => {
     console.error('Failed to log in:', response);
     // Show an error message to the user
   }
+
+  
+  useEffect(() => {
+    /* global google */
+    google.accounts.id.initialize({
+      client_id: process.env.REACT_APP_GOOGLE_API_TOKEN,
+      callback: handleCredentialResponse,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('signInDiv'),
+      { theme: 'outline', size: 'large' } // Customize the button as needed
+    );
+  }, []);
+
+  const handleCredentialResponse = (response) => {
+    console.log('Encoded JWT ID token:', response.credential);
+    // Use the JWT token to authenticate the user on your backend
+    // Decode the JWT to get the user's Google ID and other profile information
+    // If successful, navigate to the home page
+    navigate('/', { replace: true });
+  };
 
 
   const responseGoogle = (response) => {
@@ -66,7 +87,7 @@ const Login = () => {
             <img src={logo} width="150px" alt="logo" />
           </div>
 
-          <div className='shadow-2xl'>
+          {/* <div className='shadow-2xl'>
             <GoogleLogin
             clientId={process.env.REACT_APP_GOOGLE_API_TOKEN}
             render={(renderProps) => (
@@ -83,11 +104,12 @@ const Login = () => {
               onSuccess={responseGoogle}
               onFailure={handleLoginFailure}
               cookiePolicy="single_host_origin"
-
-
-            
             />
 
+          </div> */}
+
+          <div className='shadow-2xl'>
+            <div id='signInDiv'></div> {/* Google Sign-In button container */}
           </div>
         </div>
       </div>
