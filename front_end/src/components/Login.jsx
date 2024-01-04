@@ -2,7 +2,7 @@ import React from 'react';
 import GoogleLogin from "react-google-login";
 import {useNavigate} from "react-router-dom";
 import ppointVideo from "../assets/ppoint.mp4";
-import logo from "../assets/PPPoint.png";
+import logo from "../assets/PPointLogo.png"
 import { FcGoogle } from 'react-icons/fc';
 import {client} from '../client'
 
@@ -65,7 +65,7 @@ const Login = () => {
               onClick={renderProps.onClick}
               disabled={renderProps.disabled}
               >
-                <FcGoogle className="mr-4"/> Sign in with Google
+                <FcGoogle className="mr-4"/> Sign in
 
               </button>
               )}
