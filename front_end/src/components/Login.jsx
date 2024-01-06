@@ -1,9 +1,7 @@
 import {React, useEffect} from 'react';
-import GoogleLogin from "react-google-login";
 import {useNavigate} from "react-router-dom";
 import ppointVideo from "../assets/ppoint.mp4";
 import logo from "../assets/PPointLogo.png"
-import { FcGoogle } from 'react-icons/fc';
 import {client} from '../client'
 
 
@@ -12,10 +10,15 @@ import {client} from '../client'
 const Login = () => {
   const navigate = useNavigate();
 
-  const handleLoginFailure = (response) => {
-    console.error('Failed to log in:', response);
-    // Show an error message to the user
-  }
+
+  const handleSignOut = () => {
+    // Sign out the user from your application
+    localStorage.removeItem('user');
+    // Sign out the user from Google
+    google.accounts.id.disableAutoSelect();
+    // Navigate to the login page or elsewhere as needed
+    navigate('/login');
+  };
 
   
   useEffect(() => {
@@ -28,6 +31,8 @@ const Login = () => {
       document.getElementById('signInDiv'),
       { theme: 'outline', size: 'large' } // Customize the button as needed
     );
+
+    google.accounts.id.prompt();
   }, []);
 
   const handleCredentialResponse = (response) => {
@@ -109,7 +114,14 @@ const Login = () => {
           </div> */}
 
           <div className='shadow-2xl'>
-            <div id='signInDiv'></div> {/* Google Sign-In button container */}
+            {/* Google Sign-In button container */}
+            <div id='signInDiv'></div> 
+            {/* Sign Out button */}
+            {localStorage.getItem('user') && (
+              <button onClick={handleSignOut} className="bg-red-600 p-3 rounded-lg cursor-pointer">
+                Sign Out
+              </button>
+            )}
           </div>
         </div>
       </div>
