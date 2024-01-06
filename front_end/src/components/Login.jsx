@@ -1,14 +1,55 @@
-import {React, useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import ppointVideo from "../assets/ppoint.mp4";
 import logo from "../assets/PPointLogo.png"
 import {client} from '../client'
+import { jwtDecode } from 'jwt-decode';
+
 
 
 
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const handleCredentialResponse = useCallback((response) => {
+    console.log('Encoded JWT ID token:', response.credential);
+    
+    // Ideally, you would send the token to a backend service to verify it against Google's 
+    // OAuth servers to ensure it's valid and to retrieve the user's profile information
+    // For simplicity, let's assume we decode it on the frontend (not recommended for production)
+  
+    const decodedToken = jwtDecode(response.credential);
+    const userId = decodedToken.sub; // This is the Google User ID
+  
+    // Query Sanity for a user with this ID
+    const query = `*[_type == "user" && _id == $userId][0]`;
+    client.fetch(query, { userId }).then(user => {
+      if (user) {
+        // User exists, proceed with login
+        console.log('User exists:', user);
+        localStorage.setItem('session', JSON.stringify({ userId: user._id, name: user.name }));
+        navigate('/', { replace: true });
+      } else {
+        // User doesn't exist, create a new one
+        const newUser = {
+          _type: 'user',
+          _id: `google-${userId}`,
+          name: decodedToken.name,
+          image: decodedToken.picture
+        };
+  
+        client.createIfNotExists(newUser).then(() => {
+          localStorage.setItem('session', JSON.stringify({ userId: newUser._id, name: newUser.name }));
+          navigate('/', { replace: true });
+        });
+      }
+    }).catch(error => {
+      console.error('Sanity user fetch/create error:', error);
+    });
+  }, [navigate]);
+
+  
 
 
   const handleSignOut = () => {
@@ -33,47 +74,10 @@ const Login = () => {
     );
 
     google.accounts.id.prompt();
-  }, []);
+  }, [handleCredentialResponse]);
 
-  const handleCredentialResponse = (response) => {
-    console.log('Encoded JWT ID token:', response.credential);
-    // Use the JWT token to authenticate the user on your backend
-    // Decode the JWT to get the user's Google ID and other profile information
-    // If successful, navigate to the home page
-    navigate('/', { replace: true });
-  };
+  
 
-
-  const responseGoogle = (response) => {
-    console.log("Google response:", response);
-    if (!response.profileObj) {
-      console.error('Google login response is missing profileObj:', response);
-      // Handle the error here. For example, you might want to show an error message to the user.
-      return;
-    }
-  
-    // If profileObj is present, proceed with your logic
-    localStorage.setItem("user", JSON.stringify(response.profileObj));
-  
-    const { name, googleId, imageUrl } = response.profileObj;
-    
-  
-    const doc = {
-      _id: googleId,
-      _type: "user",
-      userName: name,
-      image: imageUrl,
-    }
-  
-    client.createIfNotExists(doc)
-    .then(() => {
-      navigate("/", { replace: true });
-    })
-    .catch((error) => {
-      console.error("Error creating user in Sanity:", error);
-    });
-  }
-  
   return (
     <div className='flex justify-start items-center flex-col h-screen'>
       <div className='relative w-full h-full'>
@@ -91,27 +95,6 @@ const Login = () => {
           <div className='p-5'>
             <img src={logo} width="150px" alt="logo" />
           </div>
-
-          {/* <div className='shadow-2xl'>
-            <GoogleLogin
-            clientId={process.env.REACT_APP_GOOGLE_API_TOKEN}
-            render={(renderProps) => (
-              <button
-              type="button"
-              className='bg-mainColor flex justify-center items-center p-3 rounded-lg cursor-pointer outline-none'
-              onClick={renderProps.onClick}
-              disabled={renderProps.disabled}
-              >
-                <FcGoogle className="mr-4"/> Sign in
-
-              </button>
-              )}
-              onSuccess={responseGoogle}
-              onFailure={handleLoginFailure}
-              cookiePolicy="single_host_origin"
-            />
-
-          </div> */}
 
           <div className='shadow-2xl'>
             {/* Google Sign-In button container */}
